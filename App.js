@@ -1,40 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
-  FlatList
+  FlatList,
+  Button,
+  Text
 } from 'react-native';
 import Item from './components/Item/Item';
 import Input from './components/Input/Input';
+import Toast from './components/Toast/Toast';
 
 export default function App() {
   const [goal, setGoal] = useState('');
   const [goals, setGoals] = useState([]);
+  const [isAddMode, setAddMode] = useState(false);
+  const [isToastVisible, setToastVisibility] = useState(false);
+  const [undoTime, setUndoTime] = useState(null);
 
   const goalInputHandler = (text) => {
-    setGoal(text);
+    if (text) {
+      setGoal(text);
+    }
   };
 
   const addGoal = () => {
+    setAddMode(false);
     setGoals(currentGoals => [
         ...currentGoals,
         { key: Math.random().toString() , value: goal }
     ]);
+    
   };
 
   const deleteGoal = key => {
-    console.log(key);
-    setGoals(currentGoals =>
-      currentGoals.filter(goal => goal.key !== key));
+    setToastVisibility(true);
+    setUndoTime(setTimeout(() => {
+      setToastVisibility(false);
+      setGoals(currentGoals =>
+        currentGoals.filter(goal => goal.key !== key));
+      setUndoTime(null);
+    }, 3000));
+  };
+
+  const undoDelete = () => {
+    setToastVisibility(false);
+    setUndoTime(clearTimeout(undoTime));
   };
 
   return (
     <View style={styles.screen}>
+        <Button
+          title="Add New Goal"
+          onPress={() => setAddMode(true)}
+        />
         <Input
             placeholder="Course Goal"
             value={goal}
             inputHandler={goalInputHandler}
             submit={addGoal}
+            isVisible={isAddMode}
         />
         <FlatList
             data={goals}
@@ -44,20 +68,19 @@ export default function App() {
                   press={() => deleteGoal(itemData.item.key)} />
             )}
         />
-      {/* <ScrollView style={styles.goalItems}>
-          {goals.map((goal, index) => (
-            <View key={index} style={styles.goalItem}>
-              <Text>{goal}</Text>
-            </View>
-          ))}
-      </ScrollView> */}
+        {isToastVisible && 
+          <Toast undo={undoDelete} text="Removed Successfully" />
+        }
     </View>
+    
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
-    padding: 50
+    marginTop: 50,
+    marginHorizontal: 20,
+    flex: 1
   },
   inputContainer: {
     flexDirection: 'row',
