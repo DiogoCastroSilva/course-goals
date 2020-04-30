@@ -11,25 +11,24 @@ import Input from './components/Input/Input';
 import Toast from './components/Toast/Toast';
 
 export default function App() {
-  const [goal, setGoal] = useState('');
   const [goals, setGoals] = useState([]);
   const [isAddMode, setAddMode] = useState(false);
   const [isToastVisible, setToastVisibility] = useState(false);
   const [undoTime, setUndoTime] = useState(null);
 
-  const goalInputHandler = (text) => {
-    if (text) {
-      setGoal(text);
+
+  const addGoal = (goal) => {
+    if (goal && goal.length > 0) {
+      closeModal();
+      setGoals(currentGoals => [
+          ...currentGoals,
+          { key: Math.random().toString() , value: goal }
+      ]);
     }
   };
 
-  const addGoal = () => {
+  const closeModal = () => {
     setAddMode(false);
-    setGoals(currentGoals => [
-        ...currentGoals,
-        { key: Math.random().toString() , value: goal }
-    ]);
-    
   };
 
   const deleteGoal = key => {
@@ -55,10 +54,9 @@ export default function App() {
         />
         <Input
             placeholder="Course Goal"
-            value={goal}
-            inputHandler={goalInputHandler}
             submit={addGoal}
             isVisible={isAddMode}
+            onCancel={closeModal}
         />
         <FlatList
             data={goals}
